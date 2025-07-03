@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Email Confirmation - HyperLab Fitness">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="HyperLab Fitness">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Email Confirmed - HyperLab Fitness</title>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #333;
+    }
+    
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+    
+    .icon {
+      width: 80px;
+      height: 80px;
+      background: #4CAF50;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 1.5rem;
+      font-size: 2rem;
+    }
+    
+    .icon.error {
+      background: #f44336;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+    
+    p {
+      color: #666;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+    
+    .button {
+      background: #667eea;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.3s ease;
+    }
+    
+    .button:hover {
+      background: #5a6fd8;
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      animation: spin 2s linear infinite;
+      margin-right: 10px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Loading State -->
+    <div id="loading-state">
+      <div class="icon">
+        <div class="loading"></div>
+      </div>
+      <h1>Confirming your email...</h1>
+      <p>Please wait while we verify your email address.</p>
+    </div>
+
+    <!-- Success State -->
+    <div id="success-state" class="hidden">
+      <div class="icon">✓</div>
+      <h1>Email Confirmed!</h1>
+      <p>Your email has been successfully confirmed. You can now close this page and return to the app.</p>
+      <button class="button" onclick="closeWindow()">Close</button>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="hidden">
+      <div class="icon error">✗</div>
+      <h1>Confirmation Failed</h1>
+      <p id="error-message">There was an error confirming your email. Please try again or contact support.</p>
+      <button class="button" onclick="closeWindow()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // Parse URL parameters
+    function getUrlParams() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      
+      const params = {};
+      for (const [key, value] of urlParams) {
+        params[key] = value;
+      }
+      for (const [key, value] of hashParams) {
+        params[key] = value;
+      }
+      
+      return params;
+    }
+
+    function showState(stateId) {
+      const states = ['loading-state', 'success-state', 'error-state'];
+      states.forEach(state => {
+        document.getElementById(state).classList.add('hidden');
+      });
+      document.getElementById(stateId).classList.remove('hidden');
+    }
+
+    function closeWindow() {
+      // Try to close the window
+      try {
+        window.close();
+      } catch (e) {
+        // If closing fails, redirect to app
+        window.location.href = '/';
+      }
+      
+      // For mobile devices or when window.close() doesn't work
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1000);
+    }
+
+    // Handle confirmation on page load
+    window.addEventListener('load', function() {
+      const params = getUrlParams();
+      
+      // Simulate processing time
+      setTimeout(() => {
+        if (params.type === 'signup' || params.token_hash || params.access_token) {
+          // Success case
+          showState('success-state');
+          
+          // Auto-close after 3 seconds
+          setTimeout(() => {
+            closeWindow();
+          }, 3000);
+          
+        } else if (params.error || params.error_description) {
+          // Error case
+          showState('error-state');
+          const errorMsg = params.error_description || params.error || 'Unknown error occurred';
+          document.getElementById('error-message').textContent = errorMsg;
+        } else {
+          // Default success for any confirmation link
+          showState('success-state');
+          
+          // Auto-close after 3 seconds
+          setTimeout(() => {
+            closeWindow();
+          }, 3000);
+        }
+      }, 1500);
+    });
+  </script>
+</body>
+</html> 
